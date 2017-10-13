@@ -9,15 +9,11 @@
       top: 10px;
       left: 10px;
     }
-    .savepng-container {
-      display: inline-block;
-    }
   </style>
 </head>
 <body>
-<div class="savepng-container">
-  <button id="savepng">Save PNG</button>
-</div>
+<button id="savepng">Save PNG</button>
+<a href="" class="savelink" style="display:none"></a>
 <canvas id="draw" width="800" height="800"></canvas>
 <script>
   // Paused at 12:30
@@ -73,9 +69,8 @@
       let evt = new MouseEvent('click', {
         bubbles: true
       });
-      let a = document.createElement('a');
+      let a = document.querySelector('.savelink');
       a.textContent = 'Download';
-      saveContainer.appendChild(a);
       a.style.display = 'none';
       a.download = filename + '.png';
       a.href = window.URL.createObjectURL(b);
