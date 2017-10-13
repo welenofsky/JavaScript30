@@ -3,10 +3,108 @@
 <head>
   <meta charset="UTF-8">
   <title>HTML5 Canvas</title>
+  <style>
+    #savepng {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+    }
+    .savepng-container {
+      display: inline-block;
+    }
+  </style>
 </head>
 <body>
+<div class="savepng-container">
+  <button id="savepng">Save PNG</button>
+</div>
 <canvas id="draw" width="800" height="800"></canvas>
 <script>
+  // Paused at 12:30
+  const canvas = document.getElementById('draw');
+  // Drawing is actually done on the context
+  const ctx = canvas.getContext('2d');
+  const saveButton = document.getElementById('savepng');
+  const saveContainer = document.querySelector('.savepng-container');
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  // Color to draw
+  ctx.strokeStyle = '#BADA55';
+  // When lines join should they be, rounded?
+  ctx.lineJoin = 'round';
+  // end of stroke
+  ctx.lineCap = 'round';
+  ctx.lineWidth = 100;
+  // Cool but didn't like the way it made the lines look
+  // ctx.globalCompositeOperation = 'overlay';
+
+  // Flag to tell us, should we draw or is someone just moving their mouse around
+  let lastX = 0;
+  let lastY = 0;
+  let isDrawing = false;
+  let hue = 0;
+  let direction = true;
+
+  function draw(e) {
+    if(!isDrawing) return; // stop the fn from running when not mousedown
+    ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(e.offsetX, e.offsetY);
+    ctx.stroke();
+    [lastX, lastY] = [e.offsetX, e.offsetY];
+    hue++;
+    if (hue > 360) {
+      hue = 0;
+    }
+    if (ctx.lineWidth >= 100 || ctx.lineWidth <= 1) {
+      direction = !direction;
+    }
+    if (direction) {
+      ctx.lineWidth++;
+    } else {
+      ctx.lineWidth--;
+    }
+  }
+
+  function blobCallback(filename) {
+    return function(b) {
+      let evt = new MouseEvent('click', {
+        bubbles: true
+      });
+      let a = document.createElement('a');
+      a.textContent = 'Download';
+      saveContainer.appendChild(a);
+      a.style.display = 'none';
+      a.download = filename + '.png';
+      a.href = window.URL.createObjectURL(b);
+
+      let cancelled = !a.dispatchEvent(evt);
+      if(cancelled) {
+        alert("Unable to save image, event cancelled");
+      }
+      window.URL.revokeObjectURL(a.href);
+    }
+  }
+
+  function downloadImage() {
+    console.log(canvas.toDataURL());
+    window.locaiton = location.assign(canvas.toDataURL());
+  }
+
+  canvas.addEventListener('mousedown', function(e) {
+    [lastX, lastY] = [e.offsetX, e.offsetY];
+    isDrawing = true
+  });
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mousedown', draw);
+  canvas.addEventListener('mouseup', () => isDrawing = false);
+  canvas.addEventListener('mouseleave', () => isDrawing = false);
+  saveButton.addEventListener('click', () => {
+    canvas.toBlob(blobCallback('korn'))
+  });
+
 </script>
 
 <style>
